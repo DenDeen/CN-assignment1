@@ -13,9 +13,9 @@ def postRequest(connection, uri, data):
     if exists(uri):
         file = open(uri + '.txt', 'a')
         file.write(data)
-        connection.send('200 Ok')
+        connection.send('200 Ok'.encode())
     else:
-        connection.send('404 Not Found')
+        connection.send('404 Not Found'.encode())
    
     connection.close()
 
@@ -25,7 +25,7 @@ def putRequest(connection, uri, data):
     with open(uri + '.html','w') as f:
             f.write(str(data))
     
-    connection.send('200 Ok')
+    connection.send('200 Ok'.encode())
     connection.close()
 
 
