@@ -1,20 +1,22 @@
 from base64 import encode
-from http.client import OK
 import socket
 from os.path import exists
 from datetime import date
 
-from client import getContentLength
-
 def getRequest(connection, uri):
-    print("connection: " + connection + "  uri: " + uri)
+    getFile()
+    #Todo file doorsturen, en via request kijken naar welke file er gezocht wordt
 
 
 def headRequest(connection, uri):
-    print("connection: " + connection + "  uri: " + uri)
+    getFile()
+    #Todo file doorsturen, en via request kijken naar welke file er gezocht wordt
+    #Enkel de head sturen
+
 
 
 def postRequest(connection, uri, data):
+    #Kijken welke content-type er wordt doorgestuurd in de request
     if exists(uri + '.txt'):
         file = open(uri + '.txt', 'a')
         file.write(data)
@@ -26,12 +28,21 @@ def postRequest(connection, uri, data):
 
 
 def putRequest(connection, uri, data):
+    #Kijken welke content type
     print("connection: " + str(connection) + "  uri: " + uri + " data: " + data)
     with open(uri + '.txt','w') as f:
             f.write(str(data))
     
     connection.send(Ok200())
     connection.close()
+
+def getFile():
+    #Error handeling
+    if exists(uri + '.txt'):
+        return open(uri + '.txt', 'a')
+    elif exists(uri + '.html'):
+        return open(uri + '.html', 'a')
+
 
 def Ok200():
     return ("200 Ok \n" + getDate() + "\n" + getContentType + "\n" + getContentLength).encode()
