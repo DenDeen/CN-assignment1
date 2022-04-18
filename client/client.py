@@ -69,7 +69,7 @@ def getRequest(host, port):
         s.sendall(request.encode())
         data = recv_all(s)
         datasplit = str(data).rpartition('<!')
-        with open('client/head.html','w') as f:
+        with open('client/{}head.html'.format(getHost(host)),'w') as f:
             f.write(data)
         with open('client/{}.html'.format(getHost(host)),'w') as f:
             f.write('<!'+datasplit[2])
