@@ -52,9 +52,12 @@ def recv_all(sock):
 
     return b''.join(fragments).decode(contentCharset)
 
+def getHost(host):
+    return re.search('(.*?)/', host).group(0)
+
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((host, port))
+        s.connect((getHost(host), port))
         request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host 
         s.sendall(request.encode())
         data = recv_all(s)
@@ -88,6 +91,7 @@ def putRequest(host, port):
 
 def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+
         s.connect((host, port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
