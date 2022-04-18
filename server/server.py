@@ -82,11 +82,11 @@ while True:
 
     request = connection.recv(1024).decode()
     
-    datasplit = str(request).split(" ",2)
+    datasplit = str(request).split(" ",1)
     requestType = datasplit[0]
     
     print("requestType: " + requestType)
-    
+    print("request")
     if requestType == 'GET':
         getRequest(connection, request)
     elif requestType == 'HEAD':
