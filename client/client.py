@@ -52,20 +52,13 @@ def recv_all(sock):
 
     return b''.join(fragments).decode(contentCharset)
 
-def getHost(host):
-    datasplit = host.split("/"1)
-    return datasplit[1]
-
-def getPath(host):
-    datasplit = host.split("/",1)
-    return datasplit[1]
+def splitHost(host):
+    return host.split("/",1)
     
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        print(getHost(host))
-        print(getPath(host))
-        s.connect((getHost(host), port))
-        request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host 
+        s.connect(splitHost(host)[0], port)
+        request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
         s.sendall(request.encode())
         data = recv_all(s)
         datasplit = str(data).rpartition('<!')
