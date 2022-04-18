@@ -1,18 +1,20 @@
 from base64 import encode
+from runpy import _ModifiedArgv0
 import socket
 from os.path import exists
 from datetime import date
 
-def getRequest(connection, uri):
+def getRequest(connection, request):
     
     return 0
 
-def headRequest(connection, uri):
+def headRequest(connection, request):
     return 0
 
-def postRequest(connection, uri, data):
-    if exists(uri + '.txt'):
-        file = open(uri + '.txt', 'a')
+def postRequest(connection, request):
+    if exists( + '.txt'):
+        file = open( + '.txt', 'a')
+        data = request.header.data
         file.write(data)
         connection.send(("200 Ok \n" + getDate()).encode())
     else:
@@ -21,24 +23,18 @@ def postRequest(connection, uri, data):
     connection.close()
 
 
-def putRequest(connection, uri, data):
-    print("connection: " + str(connection) + "  uri: " + uri + " data: " + data)
-    with open(uri + '.txt','w') as f:
+def putRequest(connection, request):
+    with open( + '.txt','w') as f:
+            data = request.header.data
             f.write(str(data))
     
     connection.send(Ok200())
     connection.close()
 
-def checkModifiedSinceHeader(connection, uri):
-    
+def checkModifiedSinceHeader(connection, request):
+    field =request.header.If-Modified-Since
+    print(field)
     return 0 
-
-def getFile():
-    #Error handeling
-    if exists(uri + '.txt'):
-        return open(uri + '.txt', 'a')
-    elif exists(uri + '.html'):
-        return open(uri + '.html', 'a')
 
 def Ok200():
     return ("200 Ok \n" + getDate() + "\n" + getContentType + "\n" + getContentLength).encode()
@@ -89,17 +85,16 @@ while True:
     datasplit = str(request).split(" ",2)
     requestType = datasplit[0]
     
-    
     print("requestType: " + requestType)
     
     if requestType == 'GET':
-        getRequest(connection, uri)
+        getRequest(connection, request)
     elif requestType == 'HEAD':
-        headRequest(connection, uri)
+        headRequest(connection, request)
     elif requestType == 'PUT':
-        putRequest(connection, uri, datasplit[2])
+        putRequest(connection, request)
     elif requestType == 'POST':
-        postRequest(connection, uri, datasplit[2])
+        postRequest(connection, request)
 
     print(request)
 
