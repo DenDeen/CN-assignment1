@@ -54,6 +54,13 @@ def recv_all(sock):
 
 def splitHost(host):
     return host.split("/",1)
+
+def getHost(host):
+    result = re.search('(?<=\.).*(?=\.)', host).group(0)
+    if (result == "0.0"):
+        return 'localhost'
+    else:
+        return result
     
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -62,9 +69,9 @@ def getRequest(host, port):
         s.sendall(request.encode())
         data = recv_all(s)
         datasplit = str(data).rpartition('<!')
-        with open('head.html','w') as f:
+        with open('client/head.html','w') as f:
             f.write(data)
-        with open('site.html','w') as f:
+        with open('client/{}.html'.format(getHost(host)),'w') as f:
             f.write('<!'+datasplit[2])
         s.close
 
