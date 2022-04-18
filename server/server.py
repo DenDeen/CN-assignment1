@@ -4,23 +4,17 @@ from os.path import exists
 from datetime import date
 
 def getRequest(connection, uri):
-    getFile()
-    #Todo file doorsturen, en via request kijken naar welke file er gezocht wordt
-
+    
+    return 0
 
 def headRequest(connection, uri):
-    getFile()
-    #Todo file doorsturen, en via request kijken naar welke file er gezocht wordt
-    #Enkel de head sturen
-
-
+    return 0
 
 def postRequest(connection, uri, data):
-    #Kijken welke content-type er wordt doorgestuurd in de request
     if exists(uri + '.txt'):
         file = open(uri + '.txt', 'a')
         file.write(data)
-        connection.send(Ok200())
+        connection.send(("200 Ok \n" + getDate()).encode())
     else:
         connection.send(BadRequest400())
    
@@ -28,7 +22,6 @@ def postRequest(connection, uri, data):
 
 
 def putRequest(connection, uri, data):
-    #Kijken welke content type
     print("connection: " + str(connection) + "  uri: " + uri + " data: " + data)
     with open(uri + '.txt','w') as f:
             f.write(str(data))
@@ -36,13 +29,16 @@ def putRequest(connection, uri, data):
     connection.send(Ok200())
     connection.close()
 
+def checkModifiedSinceHeader(connection, uri):
+    
+    return 0 
+
 def getFile():
     #Error handeling
     if exists(uri + '.txt'):
         return open(uri + '.txt', 'a')
     elif exists(uri + '.html'):
         return open(uri + '.html', 'a')
-
 
 def Ok200():
     return ("200 Ok \n" + getDate() + "\n" + getContentType + "\n" + getContentLength).encode()
@@ -92,7 +88,7 @@ while True:
     
     datasplit = str(request).split(" ",2)
     requestType = datasplit[0]
-    uri = datasplit[1]
+    
     
     print("requestType: " + requestType)
     

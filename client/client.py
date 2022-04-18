@@ -52,10 +52,10 @@ def recv_all(sock):
 
     return b''.join(fragments).decode(contentCharset)
 
-def getRequest(host, port, uri):
+def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
-        request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
+        request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host 
         s.sendall(request.encode())
         data = recv_all(s)
         datasplit = str(data).rpartition('<!')
@@ -65,7 +65,7 @@ def getRequest(host, port, uri):
             f.write('<!'+datasplit[2])
         s.close
 
-def headRequest(host, port, uri):
+def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
         request =  'HEAD' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
@@ -75,24 +75,24 @@ def headRequest(host, port, uri):
             f.write(str(data))
         s.close
 
-def putRequest(host, port, uri):
+def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
         string = input("Give the string you want to place in a new file: ")
-        request = 'PUT ' + uri + ' ' + string
+        request = 'PUT ' + ' ' + string
         s.send(request.encode())
         data = s.recv(1024)
         print(data)
 
-def postRequest(host, port, uri):
+def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
         string = input("Give the string you want to append: ")
-        request = 'POST ' + uri + ' ' + string
+        request = 'POST ' + string
         s.send(request.encode())
         data = s.recv(1024)
         print(data)
@@ -102,30 +102,28 @@ def main(argv):
         COMMAND = argv[0] # The command used for the HTTP request
         HOST = argv[1]  # The server's hostname or IP address
         PORT = int(argv[2])  # The port used by the server
-        URI = argv[3]  # The server's hostname or IP address
         print('HTTP Command: ', argv[0])
         print('SERVER: ', argv[1])
         print('PORT: ', argv[2])
-        print('URI: ', argv[3])
 
     except:
-        print('Four arguments needed')
+        print('Three arguments needed')
         sys.exit(2)
     
     if COMMAND == 'GET':
-        getRequest(HOST, PORT, URI)
+        getRequest(HOST, PORT)
     elif COMMAND == 'HEAD':
-        headRequest(HOST, PORT, URI)
+        headRequest(HOST, PORT)
     elif COMMAND == 'PUT':
-        putRequest(HOST, PORT, URI)
+        putRequest(HOST, PORT)
     elif COMMAND == 'POST':
-        postRequest(HOST, PORT, URI)
+        postRequest(HOST, PORT)
     else:
         print('Invalid commands given.')
         print('arg1: HTTP Command')
         print('arg2: HOST')
         print('arg3: Port')
-        print('arg4: URI')
+     
         sys.exit(2)
 
 if __name__ == "__main__":
