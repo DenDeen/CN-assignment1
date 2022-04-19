@@ -154,9 +154,6 @@ print ("socket is listening")
 
 while True:
     connection, addr = s.accept()
-    print ('Got connection from', addr )
-
-    connection.send('Thank you for connecting'.encode())
 
     request = connection.recv(1024).decode()
     
