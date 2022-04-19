@@ -81,11 +81,14 @@ def postRequest(connection, request):
     else:
         try:
             if(file.endswith(".txt")):
-                path = os.path.join("server",file) 
-                file = open(path,'a')
-                file.write("data")
-                file.close()
-                header = 'HTTP/1.1 200 OK\n'
+                path = os.path.join("server",file)
+                if os.path.exists(path):
+                    file = open(path,'a')
+                    file.write("data")
+                    file.close()
+                    header = 'HTTP/1.1 200 OK\n'
+                else:
+                    raise Exception("File doesn't excist")
             else:
                 header = 'HTTP/1.1 400 Bad request\n\n'
                 
