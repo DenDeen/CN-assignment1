@@ -31,11 +31,10 @@ def getRequest(connection, requestFile):
         else:
             mimetype = 'text/html'
 
-        header += 'Content-Type: '+str(mimetype)+'<strong>\n\n</strong>'
+        header += 'Content-Type: '+str(mimetype)+'<strong>\n\n</strong>' + getDate() + " /n" + "Content-length: " + len(response)
 
     except Exception as e:
-        print(e)
-        header = 'HTTP/1.1 404 Not Found\n\n'
+        header = 'HTTP/1.1 404 Not Found\n\n ' 
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
@@ -82,13 +81,10 @@ def postRequest(connection, request):
         try:
             if(file.endswith(".txt")):
                 path = os.path.join("server",file)
-                if os.path.exists(path):
-                    file = open(path,'a')
-                    file.write("data")
-                    file.close()
-                    header = 'HTTP/1.1 200 OK\n'
-                else:
-                    raise Exception("File doesn't excist")
+                file = open(path,'a')
+                file.write("data")
+                file.close()
+                header = 'HTTP/1.1 200 OK\n'
             else:
                 header = 'HTTP/1.1 400 Bad request\n\n'
                 
@@ -120,7 +116,6 @@ def putRequest(connection, request):
                 header = 'HTTP/1.1 400 Bad request\n\n'
                 
         except Exception as e:
-            print(e)
             header = 'HTTP/1.1 500 Servor error\n\n'
     
     final_response = header.encode('utf-8')
@@ -160,17 +155,21 @@ while True:
 
     request = connection.recv(1024).decode()
     
-    datasplit = str(request).split(" ")
+    datasplit = str(request).split(" ",2)
     requestType = datasplit[0]
     requestFile = datasplit[1]
-    requestHttpType = datasplit[2]
-    
-    if requestType == 'GET':
-        getRequest(connection, requestFile)
-    elif requestType == 'HEAD':
-        headRequest(connection, requestFile)
-    elif requestType == 'PUT':
-        putRequest(connection, request)
-    elif requestType == 'POST':
-        postRequest(connection, request)
+    header = datasplit[2]
+
+    if "Host: " in header:
+        
+        if requestType == 'GET':
+            getRequest(connection, requestFile)
+        elif requestType == 'HEAD':
+            headRequest(connection, requestFile)
+        elif requestType == 'PUT':
+            putRequest(connection, request)
+        elif requestType == 'POST':
+            postRequest(connection, request)
+    else:
+        connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
 

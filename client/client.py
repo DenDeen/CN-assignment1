@@ -52,8 +52,10 @@ def recv_all(sock):
 
 def getHost(host):
     result = re.search('(?<=\.).*(?=\.)', host).group(0)
-    if (result == '0.0' | result == ''):
+    if (result == '0.0'):
         return 'localhost'
+    elif (result.find()):
+        result = result.replace('/', '').replace('.', '')
     else:
         return result
     
@@ -83,7 +85,7 @@ def getRequest(host, port):
             for img in soup.find_all("img"):
                 try:
                     img_uri = img['src']
-                    s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost:%s\r\n\r\n' % host.split("/",1)[0]).encode())
+                    s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost: %s\r\n\r\n' % host.split("/",1)[0]).encode())
                     _, image_data =  recv_all(s)
                     
                     # save image
@@ -100,7 +102,7 @@ def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((host, port))
-        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost:%s\r\n\r\n" % hostSplit
+        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         data = recv_all(s)
         with open('client/{}_head.html'.format(getHost(host)),'w') as f:
