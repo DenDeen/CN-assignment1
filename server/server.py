@@ -31,16 +31,16 @@ def getRequest(connection, requestFile):
         else:
             mimetype = 'text/html'
 
-        header += 'Content-Type: '+str(mimetype)+'<strong>\n\n</strong>' + getDate() + " /n" + "Content-length: " + len(response)
+        header += 'Content-Type: '+str(mimetype)+'<strong>\n\n</strong>' + getDate() + " /n" + "Content-length: " + str(len(response))
 
     except Exception as e:
+        print(e)
         header = 'HTTP/1.1 404 Not Found\n\n ' 
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
     final_response += response
     connection.send(final_response)
-    print("Returned response:" + final_response.decode())
     connection.close()
     
 
@@ -71,18 +71,24 @@ def headRequest(connection, requestFile):
     connection.send(final_response)
     connection.close()
 
-def postRequest(connection, request):  
+def postRequest(connection, requestFile, request):  
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
+    data = request.split("?data='",1)[1].split("'")[0]
     
     if(file == '/'):
         header = 'HTTP/1.1 400 Bad request\n\n'
     else:
         try:
             if(file.endswith(".txt")):
+                createPaths(file)
                 path = os.path.join("server",file)
-                file = open(path,'a')
-                file.write("data")
+                if os.path.exists(path):
+                    file = open(path,'a')
+                    file.write("\n")
+                else:
+                    file = open(path,'a')
+                file.write(data)
                 file.close()
                 header = 'HTTP/1.1 200 OK\n'
             else:
@@ -96,9 +102,10 @@ def postRequest(connection, request):
     connection.close()
         
 
-def putRequest(connection, request):
+def putRequest(connection, requestFile, request):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
+    data = request.split("?data='",1)[1].split("'")[0]
     
     if(file == '/'):
         header = 'HTTP/1.1 400 Bad request\n\n'
@@ -108,7 +115,7 @@ def putRequest(connection, request):
                 createPaths(file)
                 path =os.path.join("server",file) 
                 file = open(path,'w') 
-                file.write('data')
+                file.write(data)
                 file.close()
 
                 header = 'HTTP/1.1 200 OK\n'
@@ -116,6 +123,7 @@ def putRequest(connection, request):
                 header = 'HTTP/1.1 400 Bad request\n\n'
                 
         except Exception as e:
+            print(e)
             header = 'HTTP/1.1 500 Servor error\n\n'
     
     final_response = header.encode('utf-8')
@@ -167,9 +175,9 @@ while True:
         elif requestType == 'HEAD':
             headRequest(connection, requestFile)
         elif requestType == 'PUT':
-            putRequest(connection, request)
+            putRequest(connection, requestFile, request)
         elif requestType == 'POST':
-            postRequest(connection, request)
+            postRequest(connection, requestFile, request)
     else:
         connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
 
