@@ -10,3 +10,5 @@ site.html
 *.html
 
 .vscode/launch.json
+
+*.png
