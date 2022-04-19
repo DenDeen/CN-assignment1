@@ -73,7 +73,7 @@ def getRequest(host, port):
                 _, image_data =  recv_all(s)
 
                 # save image
-                with open('client/{}_image.png'.format(getHost(host)), 'wb') as image_file:
+                with open('client/{}_image_{}.png'.format(getHost(host),img['id']), 'wb') as image_file:
                     image_file.write(image_data)
         s.close
 
