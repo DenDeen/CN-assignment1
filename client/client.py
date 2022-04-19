@@ -27,7 +27,6 @@ def getContentLength(head):
 def recv_all(sock):
     chunks = b''
     chunk = sock.recv(2048)
-    print(chunk)
     chunks += chunk
 
     contentCharset = getContentCharset(chunk)
@@ -52,10 +51,8 @@ def recv_all(sock):
 
 def getHost(host):
     result = re.search('(?<=\.).*(?=\.)', host.split('/')[0]).group(0)
-    if (result == '0.0' | result == ''):
+    if (result == '0.0'):
         return 'localhost'
-    elif (result.find()):
-        result = result.replace('/', '').replace('.', '')
     else:
         return result
     
