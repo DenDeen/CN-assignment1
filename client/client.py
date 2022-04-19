@@ -79,6 +79,7 @@ def getRequest(host, port):
         request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         _, html_data = recv_all(s)
+        print(html_data)
         path = createPaths(host) 
 
         with open(path + '\\index.html','wb') as f:

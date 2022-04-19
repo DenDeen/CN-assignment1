@@ -31,15 +31,16 @@ def getRequest(connection, requestFile):
         else:
             mimetype = 'text/html'
 
-        header += 'Content-Type: '+str(mimetype)+'<strong>\n\n</strong>' + getDate() + " /n" + "Content-length: " + str(len(response))
+        header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
     except Exception as e:
-        print(e)
+        
         header = 'HTTP/1.1 404 Not Found\n\n ' 
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
-    
+
     final_response = header.encode('utf-8')
-    final_response += response
+    final_response += b'\r\n\r\n'
+    final_response += response 
     connection.send(final_response)
     connection.close()
     
@@ -67,6 +68,7 @@ def headRequest(connection, requestFile):
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
+    final_response += b'\r\n\r\n'
     final_response += response
     connection.send(final_response)
     connection.close()
