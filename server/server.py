@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 import os
 from venv import create
+
 def getRequest(connection, requestFile):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
@@ -107,8 +108,10 @@ def putRequest(connection, request):
         try:
             if(file.endswith(".txt")):
                 createPaths(file)
-                file = open(file,'w') 
-                file.write("DATA")
+                if not os.path.exists(os.path.join(os.getcwd(),file)):
+                    with open(os.path.join(os.getcwd(),file), 'w') as f:
+                        f.write("data")
+  
                 response = ""
                 header = 'HTTP/1.1 200 OK\n'
             else:
@@ -116,8 +119,9 @@ def putRequest(connection, request):
                 response = '<html><body><center><h3>Error 400: Bad request</h3><p>Can only create text files</p></center></body></html>'.encode('utf-8')
                 
         except Exception as e:
-            header = 'HTTP/1.1 404 Not Found\n\n'
-            response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
+            print(e)
+            header = 'HTTP/1.1 500 Servor error\n\n'
+            response = '<html><body><center><h3>Error 500: Server Error</h3><p>Problem while creating the file</p></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
     final_response += response
