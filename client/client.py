@@ -94,11 +94,7 @@ def putRequest(host, port):
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
         string = input("Give the string you want to place in a new file: ")
-        headers = {
-            "headers": {
-                 "data": string
-            }
-        }
+        headers = {"headers": {"data": string}}
         request =  'PUT' + " / HTTP/1.1\r\nHost: %s\r\n\r\n" % host + "\n" + json.dumps(headers, indent = 4)
         s.send(request.encode())
         data = s.recv(1024)
@@ -109,13 +105,11 @@ def postRequest(host, port):
         s.connect((splitHost(host)[0], port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
-
-        chosenString = input("Give the string you want to append: ")
-        dataDict = {"data": chosenString}
-        data = json.dumps(dataDict)
-
-        s.sendall(bytes(data,encoding="utf-8"))
-        data = s.recv(1024).decode("utf-8")
+        string = input("Give the string you want to append: ")
+        headers = {"headers": {"data": string}}
+        request =  'POST' + " / HTTP/1.1\r\nHost: %s\r\n\r\n" % host + "\n" + json.dumps(headers, indent = 4)
+        s.send(request.encode())
+        data = s.recv(1024)
         print(data)
         
 
