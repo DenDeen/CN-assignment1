@@ -1,16 +1,18 @@
 #!/usr/bin/python
 
 from codecs import ignore_errors
+from bs4 import BeautifulSoup
 import sys
+import select
 import socket
 import re
 import json
 
+
 def getContentCharset(head):
     try:
         result = re.search(b'charset=(.*?)\\r', head)
-        #return result.group(1).decode("utf-8")
-        return 'unicode_escape'
+        return result.group(1).decode("utf-8")
     except:
         return 'unicode_escape'
 
@@ -19,42 +21,32 @@ def getContentLength(head):
         result = re.search(b'Content-Length:(.*?)\\r', head)
         return int(result.group(1).decode("utf-8"))
     except:
-        return 1024
+        return 2048
 
 def recv_all(sock):
-    sock.settimeout(3)
-
-    fragments = []
-    chunk = sock.recv(1024)
-    fragments.append(chunk)
+    chunks = b''
+    chunk = sock.recv(2048)
+    chunks += chunk
 
     contentCharset = getContentCharset(chunk)
     contentLength = getContentLength(chunk)
 
-    if (contentLength == 1024):
-        while 1:
-            try:
-                chunk = sock.recv(1024)
-                if chunk:
-                    fragments.append(chunk)
-            except socket.timeout:
-                print('All chunks received')
-                break  
+    if (contentLength <= 2048):
+        while select.select([sock], [], [], 3)[0]:
+            data = sock.recv(2048)
+            if not data: 
+                break
+            chunks += data
     else:
-        counter = 1024
+        counter = 2048
         while counter < contentLength:
-            try:
-                chunk = sock.recv(1024)
-                fragments.append(chunk)
-                counter += len(chunk)
-            except socket.timeout:
-                print('All chunks received')
-                break  
+            chunk = sock.recv(2048)
+            chunks += chunk
+            counter += len(chunk)
 
-    return b''.join(fragments).decode(contentCharset)
-
-def splitHost(host):
-    return host.split("/",1)
+    headers_data = chunks.split(b'\r\n\r\n')[0]
+    html_data = chunks[len(headers_data)+4:]
+    return headers_data, html_data 
 
 def getHost(host):
     result = re.search('(?<=\.).*(?=\.)', host).group(0)
@@ -65,15 +57,25 @@ def getHost(host):
     
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((splitHost(host)[0], port))
+        s.connect((host.split("/",1)[0], port))
+
         request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
         s.sendall(request.encode())
-        data = recv_all(s)
-        datasplit = str(data).rpartition('<!')
-        with open('client/{}head.html'.format(getHost(host)),'w') as f:
-            f.write(data)
-        with open('client/{}.html'.format(getHost(host)),'w') as f:
-            f.write('<!'+datasplit[2])
+        _, html_data = recv_all(s)
+        path = 'client/{}.html'.format(getHost(host))
+        with open(path,'wb') as f:
+            f.write(html_data)
+
+        with open(path) as f:
+            soup = BeautifulSoup(f, "html.parser")
+            for img in soup.find_all("img"):
+                s.sendall(('GET ' + img['src'] + ' HTTP/1.1\r\nHost:%s\r\n\r\n' % host).encode())
+                _, image_data =  recv_all(s)
+
+                # save image
+                with open('client/{}_image.png'.format(getHost(host)), 'wb') as image_file:
+                    image_file.write(image_data)
+                    image_file.close()
         s.close
 
 def headRequest(host, port):
@@ -82,7 +84,7 @@ def headRequest(host, port):
         request =  'HEAD' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
         s.sendall(request.encode())
         data = recv_all(s)
-        with open('head.html','w') as f:
+        with open('client/{}_head.html'.format(getHost(host)),'w') as f:
             f.write(str(data))
         s.close
 
@@ -107,15 +109,13 @@ def postRequest(host, port):
         s.connect((splitHost(host)[0], port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
-        string = input("Give the string you want to append: ")
-        headers = {
-            "headers": {
-                 "data": string
-            }
-        }
-        request =  'POST' + " / HTTP/1.1\r\nHost: %s\r\n\r\n" % host + "\n" + json.dumps(headers, indent = 4)
-        s.send(request.encode())
-        data = s.recv(1024)
+
+        chosenString = input("Give the string you want to append: ")
+        dataDict = {"data": chosenString}
+        data = json.dumps(dataDict)
+
+        s.sendall(bytes(data,encoding="utf-8"))
+        data = s.recv(1024).decode("utf-8")
         print(data)
         
 
