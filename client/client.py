@@ -7,7 +7,7 @@ import sys
 import select
 import socket
 import re
-import json
+import os
 
 
 def getContentCharset(head):
@@ -65,6 +65,13 @@ def getUrl(host):
     else:
         return "/"
     
+def createPaths(file):
+    path = os.path.join(os.getcwd(),os.path.join("client", getHost(file)))
+    if not os.path.isdir(path):
+        print("making dir: " + path)
+        os.makedirs (path, mode=0o777, exist_ok=False)
+    return path
+
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
@@ -72,11 +79,12 @@ def getRequest(host, port):
         request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost:%s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         _, html_data = recv_all(s)
-        path = 'client/{}.html'.format(getHost(host))
-        with open(path,'wb') as f:
+        path = createPaths(host) 
+
+        with open(path + '\\index.html','wb') as f:
             f.write(html_data)
 
-        with open(path) as f:
+        with open(path + '\\index.html') as f:
             soup = BeautifulSoup(f, "html.parser")
             i = 1
             for img in soup.find_all("img"):
@@ -86,7 +94,7 @@ def getRequest(host, port):
                     _, image_data =  recv_all(s)
                     
                     # save image
-                    with open('client/{}_image_{}.png'.format(getHost(host),i), 'wb') as image_file:
+                    with open(path + '\\image_{}.png'.format(i), 'wb') as image_file:
                         i += 1
                         image_file.write(image_data)
                         image_file.close()
