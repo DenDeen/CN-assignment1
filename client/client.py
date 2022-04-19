@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from codecs import ignore_errors
+from posixpath import split
 from bs4 import BeautifulSoup
 import sys
 import select
@@ -55,11 +56,22 @@ def getHost(host):
     else:
         return result
     
+def splitHost(host):
+    return host.split("/",1)    
+
+def getUrl(host):
+    
+    if len(splitHost(host)) > 1:
+        return splitHost(host)[1]
+    else:
+        return "/"
+    
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((host.split("/",1)[0], port))
-
-        request =  'GET' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
+        hostSplit = splitHost(host)[0]
+        s.connect((hostSplit, port))
+        
+        request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost:%s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         _, html_data = recv_all(s)
         path = 'client/{}.html'.format(getHost(host))
@@ -90,16 +102,16 @@ def getRequest(host, port):
 
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        hostSplit = splitHost(host)[0]
         s.connect((host, port))
-        request =  'HEAD' + " / HTTP/1.1\r\nHost:%s\r\n\r\n" % host
+        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost:%s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         data = recv_all(s)
         with open('client/{}_head.html'.format(getHost(host)),'w') as f:
             f.write(str(data))
         s.close
         
-def splitHost(host):
-    return host.split("/",1)
+
 
 def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -108,7 +120,7 @@ def putRequest(host, port):
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
         data = input("Give the string you want to place in a new file: ")
-        url = splitHost(host)[1] + "?data='" +data + "'"
+        url = getUrl(host) + "?data='" +data + "'"
         request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
         response = s.recv(1024)
@@ -121,7 +133,7 @@ def postRequest(host, port):
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
         data = input("Give the string you want to append to a file: ")
-        url = splitHost(host)[1] + "?data='" +data + "'"
+        url = getUrl(host) + "?data='" +data + "'"
         request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
         response = s.recv(1024)
