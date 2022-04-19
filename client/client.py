@@ -86,31 +86,35 @@ def headRequest(host, port):
         with open('client/{}_head.html'.format(getHost(host)),'w') as f:
             f.write(str(data))
         s.close
+        
+def splitHost(host):
+    return host.split("/",1)
 
 def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((splitHost(host)[0], port))
+        hostSplit = splitHost(host)[0]
+        s.connect((hostSplit, port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
-        string = input("Give the string you want to place in a new file: ")
-        headers = {"headers": {"data": string}}
-        request =  'PUT' + " / HTTP/1.1\r\nHost: %s\r\n\r\n" % host + "\n" + json.dumps(headers, indent = 4)
+        data = input("Give the string you want to place in a new file: ")
+        url = splitHost(host)[1] + "?data='" +data + "'"
+        request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
-        data = s.recv(1024)
-        print(data)
+        response = s.recv(1024)
+        print(response)
 
 def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((splitHost(host)[0], port))
+        hostSplit = splitHost(host)[0]
+        s.connect((hostSplit, port))
         connectResponse = s.recv(1024)
         print(connectResponse.decode())
-        string = input("Give the string you want to append: ")
-        headers = {"headers": {"data": string}}
-        request =  'POST' + " / HTTP/1.1\r\nHost: %s\r\n\r\n" % host + "\n" + json.dumps(headers, indent = 4)
+        data = input("Give the string you want to append to a file: ")
+        url = splitHost(host)[1] + "?data='" +data + "'"
+        request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
-        data = s.recv(1024)
-        print(data)
-        
+        response = s.recv(1024)
+        print(response)
 
 def main(argv):
     try:
