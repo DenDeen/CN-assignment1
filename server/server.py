@@ -14,18 +14,19 @@ def getRequest(connection, requestFile):
     file = file.lstrip('/')
     
     if(file == '/'):
-        file = 'index.html'
+        file = 'server/index.html'
     
     try:
-        file = open(file,'rb') 
+        path =os.path.join("server",file) 
+        file = open(path,'rb') 
         response = file.read()
         file.close()
 
         header = 'HTTP/1.1 200 OK\n'
 
-        if(file.endswith(".jpg")):
+        if(path.endswith(".jpg")):
             mimetype = 'image/jpg'
-        elif(file.endswith(".css")):
+        elif(path.endswith(".css")):
             mimetype = 'text/css'
         else:
             mimetype = 'text/html'
@@ -33,12 +34,14 @@ def getRequest(connection, requestFile):
         header += 'Content-Type: '+str(mimetype)+'<strong>\n\n</strong>'
 
     except Exception as e:
+        print(e)
         header = 'HTTP/1.1 404 Not Found\n\n'
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
     final_response += response
     connection.send(final_response)
+    print("Returned response:" + final_response.decode())
     connection.close()
     
 
@@ -47,11 +50,11 @@ def headRequest(connection, requestFile):
     file = file.lstrip('/')
     
     if(file == '/'):
-        file = 'index.html'
+        file = 'server/index.html'
     
     try:
         if(file.endswith(".html")):
-            file = open(file,'rb') 
+            file = open(os.path.join("server",file),'rb') 
             response = file.read()
             #TODO: Filter head
             file.close()
@@ -75,24 +78,21 @@ def postRequest(connection, request):
     
     if(file == '/'):
         header = 'HTTP/1.1 400 Bad request\n\n'
-        response = '<html><body><center><h3>Error 400: Bad request</h3><p>File name needed</p></center></body></html>'.encode('utf-8')
     else:
         try:
             if(file.endswith(".txt")):
-                file = open(file,'rb') 
-                file.write("DATA")
-                response = ""
+                path = os.path.join("server",file) 
+                file = open(path,'a')
+                file.write("data")
+                file.close()
                 header = 'HTTP/1.1 200 OK\n'
             else:
                 header = 'HTTP/1.1 400 Bad request\n\n'
-                response = '<html><body><center><h3>Error 400: Bad request</h3><p>Can only write to text files</p></center></body></html>'.encode('utf-8')
                 
         except Exception as e:
             header = 'HTTP/1.1 404 Not Found\n\n'
-            response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
-    final_response += response
     connection.send(final_response)
     connection.close()
         
@@ -103,28 +103,24 @@ def putRequest(connection, request):
     
     if(file == '/'):
         header = 'HTTP/1.1 400 Bad request\n\n'
-        response = '<html><body><center><h3>Error 400: Bad request</h3><p>File name needed</p></center></body></html>'.encode('utf-8')
     else:
         try:
             if(file.endswith(".txt")):
                 createPaths(file)
-                if not os.path.exists(os.path.join(os.getcwd(),file)):
-                    with open(os.path.join(os.getcwd(),file), 'w') as f:
-                        f.write("data")
-  
-                response = ""
+                path =os.path.join("server",file) 
+                file = open(path,'w') 
+                file.write('data')
+                file.close()
+
                 header = 'HTTP/1.1 200 OK\n'
             else:
                 header = 'HTTP/1.1 400 Bad request\n\n'
-                response = '<html><body><center><h3>Error 400: Bad request</h3><p>Can only create text files</p></center></body></html>'.encode('utf-8')
                 
         except Exception as e:
             print(e)
             header = 'HTTP/1.1 500 Servor error\n\n'
-            response = '<html><body><center><h3>Error 500: Server Error</h3><p>Problem while creating the file</p></center></body></html>'.encode('utf-8')
     
     final_response = header.encode('utf-8')
-    final_response += response
     connection.send(final_response)
     connection.close()
     

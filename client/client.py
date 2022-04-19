@@ -27,6 +27,7 @@ def getContentLength(head):
 def recv_all(sock):
     chunks = b''
     chunk = sock.recv(2048)
+    print(chunk)
     chunks += chunk
 
     contentCharset = getContentCharset(chunk)
