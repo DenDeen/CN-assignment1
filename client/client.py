@@ -50,7 +50,7 @@ def recv_all(sock):
 
 def getHost(host):
     result = re.search('(?<=\.).*(?=\.)', host).group(0)
-    if (result == "0.0"):
+    if (result == '0.0' | result == ''):
         return 'localhost'
     else:
         return result
