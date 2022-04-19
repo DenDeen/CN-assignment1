@@ -1,9 +1,12 @@
 from base64 import encode
+from fileinput import filename
 from runpy import _ModifiedArgv0
 import socket
 from os.path import exists
 from datetime import date
-
+import re
+from pathlib import Path
+import os
 def getRequest(connection, request):
     
     return 0
@@ -11,8 +14,9 @@ def getRequest(connection, request):
 def headRequest(connection, request):
     return 0
 
-def postRequest(connection, request):
+def postRequest(connection, request):   
     path = getPath(request)
+    print(path)
     if exists( path + '.txt'):
         file = open( path + '.txt', 'a')
         data = request.header.data
@@ -22,22 +26,29 @@ def postRequest(connection, request):
         connection.send(BadRequest400())
    
     connection.close()
-
+    
 
 def putRequest(connection, request):
     path = getPath(request)
-    with open(path + '.txt','w') as f:
+    with open(path,'w') as f:
             data = request.header.data
             f.write(str(data))
     
     connection.send(Ok200())
     connection.close()
-
-def getPath(request):
-    datasplit = str(request).split("\n",2)
-    host = datasplit[1]
-    return host.split("/",1)[1]
     
+        
+def createPaths(path):
+    final_path = os.path.join(os.getcwd(), path)
+    if not os.path.isdir(final_path):
+        print("making dir: " + final_path)
+        os.makedirs (final_path,mode=0o777, exist_ok=False)
+    return final_path
+        
+        
+def getPath(request):
+    fullPath = str(request).split("\n",2)[1].split(" ",1)[1]
+    return createPaths(os.path.join("server", os.path.split(fullPath)[0]))
     
 def checkModifiedSinceHeader(connection, request):
     field =request.header.If-Modified-Since
@@ -92,8 +103,6 @@ while True:
     
     datasplit = str(request).split(" ",1)
     requestType = datasplit[0]
-    
-    print(request)
     
     if requestType == 'GET':
         getRequest(connection, request)
