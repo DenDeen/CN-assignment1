@@ -49,8 +49,8 @@ def recv_all(sock):
     return headers_data, html_data 
 
 def getHost(host):
-    result = re.search('(?<=\.).*(?=\.)', host).group(0)
-    if (result == "0.0"):
+    result = re.search('(?<=\.).*(?=\.)', host.split('/')[0]).group(0)
+    if (result == '0.0' | result == ''):
         return 'localhost'
     else:
         return result
