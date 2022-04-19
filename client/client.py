@@ -68,14 +68,25 @@ def getRequest(host, port):
 
         with open(path) as f:
             soup = BeautifulSoup(f, "html.parser")
+            finds = soup.find_all("img")
+            i = 1
             for img in soup.find_all("img"):
-                s.sendall(('GET ' + img['src'] + ' HTTP/1.1\r\nHost:%s\r\n\r\n' % host).encode())
-                _, image_data =  recv_all(s)
-
-                # save image
-                with open('client/{}_image_{}.png'.format(getHost(host),img['id']), 'wb') as image_file:
-                    image_file.write(image_data)
-        s.close
+                try:
+                    print(img)
+                    img_uri = img['src']
+                    if img_uri[0] != '/':
+                        img_uri = '/'+img_uri
+                    s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost:%s\r\n\r\n' % host).encode())
+                    _, image_data =  recv_all(s)
+                    # save image
+                    with open('client/{}_image_{}.png'.format(getHost(host),i), 'wb') as image_file:
+                        i += 1
+                        image_file.write(image_data)
+                        image_file.close()
+                except:
+                    print(img)
+            f.close()
+        s.close()
 
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
