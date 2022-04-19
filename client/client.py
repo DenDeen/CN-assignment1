@@ -52,7 +52,7 @@ def recv_all(sock):
 
 def getHost(host):
     result = re.search('(?<=\.).*(?=\.)', host).group(0)
-    if (result == "0.0"):
+    if (result == '0.0' | result == ''):
         return 'localhost'
     else:
         return result
@@ -61,7 +61,6 @@ def splitHost(host):
     return host.split("/",1)    
 
 def getUrl(host):
-    
     if len(splitHost(host)) > 1:
         return splitHost(host)[1]
     else:
@@ -81,15 +80,13 @@ def getRequest(host, port):
 
         with open(path) as f:
             soup = BeautifulSoup(f, "html.parser")
-            finds = soup.find_all("img")
             i = 1
             for img in soup.find_all("img"):
                 try:
                     img_uri = img['src']
-                    if img_uri[0] != '/':
-                        img_uri = '/'+img_uri
                     s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost:%s\r\n\r\n' % host.split("/",1)[0]).encode())
                     _, image_data =  recv_all(s)
+                    
                     # save image
                     with open('client/{}_image_{}.png'.format(getHost(host),i), 'wb') as image_file:
                         i += 1
