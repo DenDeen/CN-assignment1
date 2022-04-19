@@ -75,7 +75,6 @@ def getRequest(host, port):
                 # save image
                 with open('client/{}_image.png'.format(getHost(host)), 'wb') as image_file:
                     image_file.write(image_data)
-                    image_file.close()
         s.close
 
 def headRequest(host, port):
