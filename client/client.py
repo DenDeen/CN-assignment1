@@ -92,6 +92,8 @@ def getRequest(host, port):
             for img in soup.find_all("img"):
                 try:
                     img_uri = img['src']
+                    if img_uri[0] != '/':
+                        img_uri = '/'+img_uri
                     s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost: %s\r\n\r\n' % host.split("/",1)[0]).encode())
                     _, image_data =  recv_all(s)
                     
