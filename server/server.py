@@ -23,7 +23,7 @@ def getRequest(connection, requestFile, headers):
         datetime_object = datetime.strptime(headers["If-Modified-Since"], '%a, %d %b %Y %X %Z')
         if  datetime.timestamp(datetime_object) > os.path.getctime(path):
             header = 'HTTP/1.1 304 NOT MODIFIED'
-            response = ""
+            response = b""
         else:
             response = file.read()
             file.close()

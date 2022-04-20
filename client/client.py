@@ -76,10 +76,11 @@ def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-        headers = {"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}
+        headers = {"If-Modified-Since": "Wed, 21 Oct 2023 07:28:00 GMT"}
         request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
-        _, html_data = recv_all(s)
+        response_header, html_data = recv_all(s)
+        print(response_header)
         path = createPaths(host) 
 
         with open(path + '\\index.html','wb') as f:
