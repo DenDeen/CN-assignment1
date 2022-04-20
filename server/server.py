@@ -110,6 +110,7 @@ def postRequest(connection, requestFile, request):
                 header = 'HTTP/1.1 400 Bad request\n\n'
                 
         except Exception as e:
+            print(e)
             header = 'HTTP/1.1 404 Not Found\n\n'
     
     final_response = header.encode('utf-8')
@@ -181,7 +182,6 @@ while True:
     requestType = datasplit[0]
     requestFile = datasplit[1]
     header = datasplit[2]
-    print(datasplit)
     headers = json.loads(datasplit[2].split("\r\n\r\n",1)[1])
     
     if "Host: " in header:

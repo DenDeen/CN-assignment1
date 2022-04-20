@@ -130,9 +130,10 @@ def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
+        headers = '{}'
         data = input("Give the string you want to place in a new file: ")
         url = getUrl(host) + "?data='" +data+ "'"
-        request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
+        request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.send(request.encode())
         response = s.recv(1024)
         print(response)
@@ -141,9 +142,10 @@ def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
+        headers = '{}'
         data = input("Give the string you want to append to a file: ")
         url = getUrl(host) + "?data='" +data + "'"
-        request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
+        request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.send(request.encode())
         response = s.recv(1024)
         print(response)
