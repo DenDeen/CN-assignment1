@@ -21,19 +21,23 @@ def getRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        response = file.read()
-        file.close()
-
-        header = 'HTTP/1.1 200 OK\n'
-
-        if(path.endswith(".jpg")):
-            mimetype = 'image/jpg'
-        elif(path.endswith(".css")):
-            mimetype = 'text/css'
+        if headers["If-Modified-Since"] > os.path.getctime(path):
+            header = 'HTTP/1.1 304 NOT MODIFIED'
+            response = ""
         else:
-            mimetype = 'text/html'
+            response = file.read()
+            file.close()
 
-        header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
+            header = 'HTTP/1.1 200 OK\n'
+
+            if(path.endswith(".jpg")):
+                mimetype = 'image/jpg'
+            elif(path.endswith(".css")):
+                mimetype = 'text/css'
+            else:
+                mimetype = 'text/html'
+
+            header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
     except Exception as e:
         
@@ -57,32 +61,30 @@ def headRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        if headers["If-Modified-Since"]:
-            print(headers["If-Modified-Since"])
-            print(os.path.getctime(path))
-            print(time.ctime(os.path.getctime(path)))
-            print(headers["If-Modified-Since"] > time.ctime(os.path.getctime(path)))
-        
-        fileLength = str(len(file.read()))
-        file.close()
-
-        header = 'HTTP/1.1 200 OK\n'
-
-        if(path.endswith(".jpg")):
-            mimetype = 'image/jpg'
-        elif(path.endswith(".css")):
-            mimetype = 'text/css'
+        if headers["If-Modified-Since"] > os.path.getctime(path):
+            header = 'HTTP/1.1 304 NOT MODIFIED'
         else:
-            mimetype = 'text/html'
+            fileLength = str(len(file.read()))
+            file.close()
 
-        header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
+            header = 'HTTP/1.1 200 OK\n'
+
+            if(path.endswith(".jpg")):
+                mimetype = 'image/jpg'
+            elif(path.endswith(".css")):
+                mimetype = 'text/css'
+            else:
+                mimetype = 'text/html'
+
+            header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
 
     except Exception as e:
         print(e)
         header = 'HTTP/1.1 404 Not Found\n\n'
-    
+        
     connection.send(header.encode('utf-8'))
     connection.close()
+    
 
 def postRequest(connection, requestFile, request):  
     file = requestFile.split('?')[0]

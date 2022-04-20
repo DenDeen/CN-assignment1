@@ -8,7 +8,7 @@ import select
 import socket
 import re
 import os
-
+import json
 
 def getContentCharset(head):
     try:
@@ -76,8 +76,8 @@ def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-
-        request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
+        headers = '{"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}'
+        request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n " % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
         _, html_data = recv_all(s)
         path = createPaths(host) 
