@@ -48,7 +48,7 @@ def getRequest(connection, requestFile):
 def headRequest(connection, requestFile):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
-    
+    print("head request")
     if(file == '/'):
         file = 'server/index.html'
     
@@ -70,6 +70,7 @@ def headRequest(connection, requestFile):
         header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
 
     except Exception as e:
+        print(e)
         header = 'HTTP/1.1 404 Not Found\n\n'
     
     connection.send(header.encode('utf-8'))
@@ -154,7 +155,7 @@ def getDate():
 s = socket.socket()
 print ("Socket successfully created")
 
-port = 80
+port = 81
 
 s.bind(('', port))
 print ("socket binded to %s" %(port))
