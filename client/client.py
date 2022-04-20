@@ -80,12 +80,12 @@ def getRequest(host, port):
         request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         _, html_data = recv_all(s)
-        print(html_data)
         path = createPaths(host) 
 
         with open(path + '\\index.html','wb') as f:
             f.write(html_data)
 
+        soup = ''
         with open(path + '\\index.html') as f:
             soup = BeautifulSoup(f, "html.parser")
             i = 1
@@ -97,12 +97,16 @@ def getRequest(host, port):
                     
                     # save image
                     with open(path + '\\image_{}.png'.format(i), 'wb') as image_file:
-                        i += 1
                         image_file.write(image_data)
                         image_file.close()
+                    img['src'] = img['src'].replace(img_uri, path + '\\image_{}.png'.format(i))
+                    i += 1
                 except:
                     print(img)
             f.close()
+        
+        with open(path + '\\index.html', 'w') as f:
+            f.write(str(soup))
         s.close()
 
 def headRequest(host, port):
