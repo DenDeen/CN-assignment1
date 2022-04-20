@@ -77,7 +77,7 @@ def getRequest(host, port):
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
         headers = '{"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}'
-        request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n " % hostSplit + json.dumps(headers)
+        request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
         _, html_data = recv_all(s)
         path = createPaths(host) 
@@ -117,7 +117,7 @@ def headRequest(host, port):
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
         headers = '{"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}'
-        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n " % hostSplit + json.dumps(headers)
+        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
         data = recv_all(s)
         path = createPaths(host) 

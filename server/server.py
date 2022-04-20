@@ -21,7 +21,7 @@ def getRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        if headers["If-Modified-Since"] > os.path.getctime(path):
+        if 1 == 2:
             header = 'HTTP/1.1 304 NOT MODIFIED'
             response = ""
         else:
@@ -40,7 +40,7 @@ def getRequest(connection, requestFile, headers):
             header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
     except Exception as e:
-        
+        print(e)
         header = 'HTTP/1.1 404 Not Found\n\n ' 
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
 
@@ -61,7 +61,7 @@ def headRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        if headers["If-Modified-Since"] > os.path.getctime(path):
+        if 1 == 2:
             header = 'HTTP/1.1 304 NOT MODIFIED'
         else:
             fileLength = str(len(file.read()))
@@ -181,6 +181,7 @@ while True:
     requestType = datasplit[0]
     requestFile = datasplit[1]
     header = datasplit[2]
+    print(datasplit)
     headers = json.loads(datasplit[2].split("\r\n\r\n",1)[1])
     
     if "Host: " in header:
