@@ -3,13 +3,12 @@ from fileinput import filename
 from runpy import _ModifiedArgv0
 import socket
 from os.path import exists
-from datetime import date
+from datetime import datetime, date
 import re
 from pathlib import Path
 import os
 from venv import create
 import json
-import time
 
 def getRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
@@ -21,7 +20,8 @@ def getRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        if 1 == 2:
+        datetime_object = datetime.strptime(headers["If-Modified-Since"], '%a, %d %b %Y %X %Z')
+        if  datetime.timestamp(datetime_object) > os.path.getctime(path):
             header = 'HTTP/1.1 304 NOT MODIFIED'
             response = ""
         else:
@@ -166,7 +166,7 @@ def getDate():
 s = socket.socket()
 print ("Socket successfully created")
 
-port = 80
+port = 81
 
 s.bind(('', port))
 print ("socket binded to %s" %(port))
