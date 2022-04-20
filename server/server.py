@@ -53,24 +53,26 @@ def headRequest(connection, requestFile):
         file = 'server/index.html'
     
     try:
-        if(file.endswith(".html")):
-            file = open(os.path.join("server",file),'rb') 
-            response = file.read()
-            #TODO: Filter head
-            file.close()
-            header = 'HTTP/1.1 200 OK\n'
+        path =os.path.join("server",file) 
+        file = open(path,'rb') 
+        fileLength = str(len(file.read()))
+        file.close()
+
+        header = 'HTTP/1.1 200 OK\n'
+
+        if(path.endswith(".jpg")):
+            mimetype = 'image/jpg'
+        elif(path.endswith(".css")):
+            mimetype = 'text/css'
         else:
-            header = 'HTTP/1.1 400 Bad request\n\n'
-            response = '<html><body><center><h3>Error 400: Bad request</h3></center></body></html>'.encode('utf-8')
-            
+            mimetype = 'text/html'
+
+        header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
+
     except Exception as e:
         header = 'HTTP/1.1 404 Not Found\n\n'
-        response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
     
-    final_response = header.encode('utf-8')
-    final_response += b'\r\n\r\n'
-    final_response += response
-    connection.send(final_response)
+    connection.send(header.encode('utf-8'))
     connection.close()
 
 def postRequest(connection, requestFile, request):  

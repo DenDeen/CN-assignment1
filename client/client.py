@@ -107,7 +107,7 @@ def getRequest(host, port):
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
-        s.connect((host, port))
+        s.connect((hostSplit, port))
         request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         data = recv_all(s)
