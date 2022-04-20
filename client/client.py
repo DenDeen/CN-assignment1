@@ -76,6 +76,7 @@ def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
+
         request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         _, html_data = recv_all(s)
