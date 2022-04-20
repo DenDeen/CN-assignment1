@@ -108,12 +108,13 @@ def getRequest(host, port):
         with open(path + '\\index.html', 'w') as f:
             f.write(str(soup))
         s.close()
-
+        
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
+        headers = '{"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}'
+        request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n " % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
         data = recv_all(s)
         path = createPaths(host) 

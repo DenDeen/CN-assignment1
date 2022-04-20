@@ -8,8 +8,10 @@ import re
 from pathlib import Path
 import os
 from venv import create
+import json
+import time
 
-def getRequest(connection, requestFile):
+def getRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
     
@@ -45,16 +47,22 @@ def getRequest(connection, requestFile):
     connection.close()
     
 
-def headRequest(connection, requestFile):
+def headRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
-    print("head request")
+
     if(file == '/'):
         file = 'server/index.html'
     
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
+        if headers["If-Modified-Since"]:
+            print(headers["If-Modified-Since"])
+            print(os.path.getctime(path))
+            print(time.ctime(os.path.getctime(path)))
+            print(headers["If-Modified-Since"] > time.ctime(os.path.getctime(path)))
+        
         fileLength = str(len(file.read()))
         file.close()
 
@@ -155,7 +163,7 @@ def getDate():
 s = socket.socket()
 print ("Socket successfully created")
 
-port = 81
+port = 80
 
 s.bind(('', port))
 print ("socket binded to %s" %(port))
@@ -167,18 +175,18 @@ while True:
     connection, addr = s.accept()
 
     request = connection.recv(1024).decode()
-    
     datasplit = str(request).split(" ",2)
     requestType = datasplit[0]
     requestFile = datasplit[1]
     header = datasplit[2]
-
+    headers = json.loads(datasplit[2].split("\r\n\r\n",1)[1])
+    
     if "Host: " in header:
         
         if requestType == 'GET':
-            getRequest(connection, requestFile)
+            getRequest(connection, requestFile, headers)
         elif requestType == 'HEAD':
-            headRequest(connection, requestFile)
+            headRequest(connection, requestFile, headers)
         elif requestType == 'PUT':
             putRequest(connection, requestFile, request)
         elif requestType == 'POST':
