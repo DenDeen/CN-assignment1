@@ -76,7 +76,7 @@ def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-        headers = '{"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}'
+        headers = {"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}
         request =  'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
         _, html_data = recv_all(s)
@@ -116,7 +116,7 @@ def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-        headers = '{"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}'
+        headers = {"If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT"}
         request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
         s.sendall(request.encode())
         data = recv_all(s)
@@ -130,7 +130,7 @@ def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-        headers = '{}'
+        headers = {}
         data = input("Give the string you want to place in a new file: ")
         url = getUrl(host) + "?data='" +data+ "'"
         request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)
@@ -142,7 +142,7 @@ def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         hostSplit = splitHost(host)[0]
         s.connect((hostSplit, port))
-        headers = '{}'
+        headers = {}
         data = input("Give the string you want to append to a file: ")
         url = getUrl(host) + "?data='" +data + "'"
         request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit + json.dumps(headers)

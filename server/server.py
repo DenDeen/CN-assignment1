@@ -14,7 +14,7 @@ import time
 def getRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
-    
+
     if(file == '/'):
         file = 'server/index.html'
     
@@ -182,7 +182,10 @@ while True:
     requestType = datasplit[0]
     requestFile = datasplit[1]
     header = datasplit[2]
+    print(datasplit[2].split("\r\n\r\n",1)[1])
     headers = json.loads(datasplit[2].split("\r\n\r\n",1)[1])
+    print(headers)
+    print(headers["If-Modified-Since"])
     
     if "Host: " in header:
         
