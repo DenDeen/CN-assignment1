@@ -93,6 +93,7 @@ def getRequest(host, port):
                 try:
                     img_uri = img['src']
                     if img_uri[0] != '/':
+                        img['src'] = img['src'].replace(img_uri, '/'+img_uri)
                         img_uri = '/'+img_uri
                     s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost: %s\r\n\r\n' % host.split("/",1)[0]).encode())
                     _, image_data =  recv_all(s)
