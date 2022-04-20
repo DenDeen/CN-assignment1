@@ -111,8 +111,10 @@ def headRequest(host, port):
         request =  'HEAD ' + getUrl(host) + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit
         s.sendall(request.encode())
         data = recv_all(s)
-        with open('client/{}_head.html'.format(getHost(host)),'w') as f:
-            f.write(str(data))
+        path = createPaths(host) 
+
+        with open(path + '\\index_head.html','wb') as f:
+            f.write(data[0])
         s.close
         
 def putRequest(host, port):
