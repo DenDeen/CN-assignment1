@@ -1,21 +1,23 @@
 #!/usr/bin/python
 
-from codecs import ignore_errors
-from posixpath import split
 from bs4 import BeautifulSoup
 import sys
 import select
 import socket
-import os
-import nlp
+import stringProcessing
 
+# 1. Fetches content length (or not if chunked)
+# 2. Receives and appends the chunks
+# 3. Returns decoded header and body
 def recv_all(sock):
     chunks = b''
+
+    # Receive header information
     chunk = sock.recv(2048)
     chunks += chunk
 
-    contentCharset = nlp.getContentCharset(chunk)
-    contentLength = nlp.getContentLength(chunk)
+    # Get content length
+    contentLength = stringProcessing.getContentLength(chunk)
 
     if (contentLength <= 2048):
         while select.select([sock], [], [], 3)[0]:
@@ -34,40 +36,20 @@ def recv_all(sock):
     html_data = chunks[len(headers_data)+4:]
     return headers_data, html_data 
 
-def getHost(host):
-    result = re.search('(?<=\.).*(?=\.)', host.split('/')[0]).group(0)
-    if (result == '0.0'):
-        return 'localhost'
-    else:
-        return result
-    
-def splitHost(host):
-    return host.split("/",1)    
-
-def getUrl(host):
-    if len(splitHost(host)) > 1:
-        return splitHost(host)[1]
-    else:
-        return "/"
-    
-def createPaths(file):
-    path = os.path.join(os.getcwd(),os.path.join("client", getHost(file)))
-    if not os.path.isdir(path):
-        print("making dir: " + path)
-        os.makedirs (path, mode=0o777, exist_ok=False)
-    return path
-
+# 1. Sends GET request to host to receive html data
+# 2. Sends GET requests for images in data, saves them and replaces the sources in html data
+# 3. Stores the modified data in folder with host name
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        hostSplit = splitHost(host)[0]
+        hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
-        request = 'GET ' + getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
+        request = 'GET ' + stringProcessing.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
         s.sendall(request.encode())
         response_header, html_data = recv_all(s)
         print(response_header)
-        path = createPaths(host) 
+        path = stringProcessing.createPaths(host) 
 
         with open(path + '\\index.html','wb') as f:
             f.write(html_data)
@@ -98,39 +80,45 @@ def getRequest(host, port):
         with open(path + '\\index.html', 'w') as f:
             f.write(str(soup))
         s.close()
-        
+
+# 1. Sends HEAD request to host to receive header information
+# 2. Stores the data in folder with host name
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        hostSplit = splitHost(host)[0]
+        hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
-        request = 'HEAD ' + getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
+        request = 'HEAD ' + stringProcessing.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
         s.send(request.encode())
         data = recv_all(s)
-        path = createPaths(host) 
+        path = stringProcessing.createPaths(host) 
 
         with open(path + '\\index_head.html','wb') as f:
             f.write(data[0])
         s.close
-        
+
+# 1. Sends PUT request to server
+# 2. Requests input to place in new file on server
 def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        hostSplit = splitHost(host)[0]
+        hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
         data = input("Give the string you want to place in a new file: ")
-        url = getUrl(host) + "?data='" +data+ "'"
+        url = stringProcessing.getUrl(host) + "?data='" +data+ "'"
         request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
         response = s.recv(1024)
         print(response)
 
+# 1. Sends POST request to server
+# 2. Requests input to append to file on server
 def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        hostSplit = splitHost(host)[0]
+        hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
         data = input("Give the string you want to append to a file: ")
-        url = getUrl(host) + "?data='" +data + "'"
+        url = stringProcessing.getUrl(host) + "?data='" +data + "'"
         request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
         response = s.recv(1024)
