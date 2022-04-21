@@ -16,13 +16,14 @@ import threading
 
 print_lock = threading.Lock()
 
+def formatFile(file):
+    file = file.split('?')[0]
+    return file.lstrip('/')
+
 def getRequest(connection, requestFile, headers):   
-    file = requestFile.split('?')[0]
-    file = file.lstrip('/')
-    if(file == '/' ) or (file == ''):
-        file = 'index.html'
+    file = formatFile(requestFile)
     try:
-        if(file[-1] == "/"):
+        if file == '' or file[-1] == "/":
             file += "index.html"
         path =os.path.join("server",file) 
         file = open(path,'rb') 
@@ -63,13 +64,9 @@ def getRequest(connection, requestFile, headers):
         
     
 def headRequest(connection, requestFile, headers):
-    file = requestFile.split('?')[0]
-    file = file.lstrip('/')
-    if(file == '/' ) or (file == ''):
-        file = 'index.html'
-    
+    file = formatFile(requestFile)
     try:
-        if(file[-1] == "/"):
+        if file[-1] == "/" or file == '':
             file += "index.html"
         path =os.path.join("server",file) 
         file = open(path,'rb') 
@@ -102,11 +99,10 @@ def headRequest(connection, requestFile, headers):
     
 
 def postRequest(connection, requestFile, request):  
-    file = requestFile.split('?')[0]
-    file = file.lstrip('/')
+    file = formatFile(requestFile)
     data = request.split("?data='",1)[1].split("'")[0]
     
-    if(file == '/' ) or (file == ''):
+    if file == '/' or file == '':
         header = 'HTTP/1.1 400 Bad request\n\n'
     else:
         try:
@@ -133,11 +129,10 @@ def postRequest(connection, requestFile, request):
         
 
 def putRequest(connection, requestFile, request):
-    file = requestFile.split('?')[0]
-    file = file.lstrip('/')
+    file = formatFile(requestFile)
     data = request.split("?data='",1)[1].split("'")[0]
     
-    if(file == '/' ) or (file == ''):
+    if file == '/' or file == '':
         print("hallo")
         header = 'HTTP/1.1 400 Bad request\n\n'
     else:
@@ -214,7 +209,7 @@ def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print ("Socket successfully created")
 
-    port = 80
+    port = 81
 
     s.bind(('', port))
     print ("socket binded to %s" %(port))
