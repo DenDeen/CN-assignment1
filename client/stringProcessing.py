@@ -1,6 +1,7 @@
 import re
 import os
 
+# Get charset from headerstring
 def getContentCharset(head):
     try:
         result = re.search(b'charset=(.*?)\\r', head)
@@ -8,6 +9,7 @@ def getContentCharset(head):
     except:
         return 'unicode_escape'
 
+# Get content length from headerstring
 def getContentLength(head):
     try:
         result = re.search(b'Content-Length:(.*?)\\r', head)
@@ -15,6 +17,7 @@ def getContentLength(head):
     except:
         return 2048
 
+# Get host from uri
 def getHost(host):
     result = re.search('(?<=\.).*(?=\.)', host.split('/')[0]).group(0)
     if (result == '0.0'):
@@ -22,15 +25,14 @@ def getHost(host):
     else:
         return result
 
-def splitHost(host):
-    return host.split("/",1)    
-
+# Get path from uri
 def getUrl(host):
-    if len(splitHost(host)) > 1:
-        return splitHost(host)[1]
+    if len(host.split("/",1)) > 1:
+        return host.split("/",1)[1]
     else:
         return "/"
-    
+
+# Create directory if it doesn't exist
 def createPaths(file):
     path = os.path.join(os.getcwd(),os.path.join("client", getHost(file)))
     if not os.path.isdir(path):

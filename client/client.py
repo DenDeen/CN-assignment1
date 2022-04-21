@@ -20,6 +20,7 @@ def recv_all(sock):
     contentLength = stringProcessing.getContentLength(chunk)
 
     if (contentLength <= 2048):
+        # Timeout of 3 seconds
         while select.select([sock], [], [], 3)[0]:
             data = sock.recv(2048)
             if not data: 
@@ -27,11 +28,14 @@ def recv_all(sock):
             chunks += data
     else:
         counter = 2048
+
+        # Receive from socket until the amount of bytes received becomes more than contentLength
         while counter < contentLength:
             chunk = sock.recv(2048)
             chunks += chunk
             counter += len(chunk)
 
+    # Split headers and body
     headers_data = chunks.split(b'\r\n\r\n')[0]
     html_data = chunks[len(headers_data)+4:]
     return headers_data, html_data 
@@ -41,25 +45,32 @@ def recv_all(sock):
 # 3. Stores the modified data in folder with host name
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Get host out of URI and connect
         hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
+
+        # Add headers to request and send
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
         request = 'GET ' + stringProcessing.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
         s.sendall(request.encode())
-        response_header, html_data = recv_all(s)
-        print(response_header)
-        path = stringProcessing.createPaths(host) 
+        _, html_data = recv_all(s)
 
+        # Create directory if it doesn't exist and create new file with fetched data
+        path = stringProcessing.createPaths(host) 
         with open(path + '\\index.html','wb') as f:
             f.write(html_data)
 
+        # Initialize parser over created html file
         soup = ''
         with open(path + '\\index.html') as f:
             soup = BeautifulSoup(f, "html.parser")
             i = 1
+
+            # Find all images and send requests to host to store them on client
             for img in soup.find_all("img"):
                 try:
+                    # Fetch image
                     img_uri = img['src']
                     if img_uri[0] != '/':
                         img['src'] = img['src'].replace(img_uri, '/'+img_uri)
@@ -67,16 +78,19 @@ def getRequest(host, port):
                     s.send(('GET ' + img_uri + ' HTTP/1.1\r\nHost: %s\r\n\r\n' % host.split("/",1)[0]).encode())
                     _, image_data =  recv_all(s)
                     
-                    # save image
+                    # Save image
                     with open(path + '\\image_{}.png'.format(i), 'wb') as image_file:
                         image_file.write(image_data)
                         image_file.close()
+
+                    # Change src in html
                     img['src'] = img['src'].replace(img_uri, path + '\\image_{}.png'.format(i))
                     i += 1
                 except:
                     print(img)
             f.close()
         
+        # Store modified data
         with open(path + '\\index.html', 'w') as f:
             f.write(str(soup))
         s.close()
@@ -85,15 +99,19 @@ def getRequest(host, port):
 # 2. Stores the data in folder with host name
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Get host out of URI and connect
         hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
+
+        # Add headers to request and send
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
         request = 'HEAD ' + stringProcessing.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
         s.send(request.encode())
         data = recv_all(s)
-        path = stringProcessing.createPaths(host) 
 
+        # Create directory if it doesn't exist and create new file with fetched header
+        path = stringProcessing.createPaths(host) 
         with open(path + '\\index_head.html','wb') as f:
             f.write(data[0])
         s.close
@@ -102,8 +120,11 @@ def headRequest(host, port):
 # 2. Requests input to place in new file on server
 def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Get host out of URI and connect
         hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
+
+        # Ask string to insert in file and send
         data = input("Give the string you want to place in a new file: ")
         url = stringProcessing.getUrl(host) + "?data='" +data+ "'"
         request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
@@ -115,8 +136,11 @@ def putRequest(host, port):
 # 2. Requests input to append to file on server
 def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Get host out of URI and connect
         hostSplit = stringProcessing.splitHost(host)[0]
         s.connect((hostSplit, port))
+
+        # Ask string to append to existing file and send
         data = input("Give the string you want to append to a file: ")
         url = stringProcessing.getUrl(host) + "?data='" +data + "'"
         request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
@@ -126,10 +150,10 @@ def postRequest(host, port):
 
 def main(argv):
     try:
-        COMMAND = argv[0] # The command used for the HTTP request
-        HOST = argv[1]  # The server's hostname or IP address
+        COMMAND = argv[0] # Request type
+        HOST = argv[1]  # Hostname or IP address
         if(len(argv)>2):
-            PORT = int(argv[2])  # The port used by the server
+            PORT = int(argv[2])  # Port used by server
         else:
             PORT = 80
         print('HTTP Command: ', COMMAND)
@@ -141,6 +165,7 @@ def main(argv):
         print('Three arguments needed')
         sys.exit(2)
     
+    # Navigate to right function depended on requestType
     if COMMAND == 'GET':
         getRequest(HOST, PORT)
     elif COMMAND == 'HEAD':
