@@ -3,13 +3,13 @@
 import socket
 import os
 import socket
-import customLibrary
+import stringProcessingServer
 from _thread import *
 from datetime import datetime
 
 # HTTP Get Request
 def getRequest(connection, requestFile, headers):   
-    file = customLibrary.formatFile(requestFile)
+    file = stringProcessingServer.formatFile(requestFile)
     try:
         # Get index.html if path ends on /
         if file == '' or file[-1] == "/":
@@ -34,16 +34,16 @@ def getRequest(connection, requestFile, headers):
                 file.close()
                 
                 header = 'HTTP/1.1 200 OK\n'
-                ContentType = customLibrary.getContentType(path)
-                header += 'Content-Type: '+str(ContentType)+ '\n' + customLibrary.getDate() + " \n" + "Content-length: " + str(len(response))
+                ContentType = stringProcessingServer.getContentType(path)
+                header += 'Content-Type: '+str(ContentType)+ '\n' + stringProcessingServer.getDate() + " \n" + "Content-length: " + str(len(response))
 
         else:
             response = file.read()
             file.close()
             
             header = 'HTTP/1.1 200 OK\n'
-            ContentType = customLibrary.getContentType(path)
-            header += 'Content-Type: '+str(ContentType)+ '\n' + customLibrary.getDate() + " \n" + "Content-length: " + str(len(response))
+            ContentType = stringProcessingServer.getContentType(path)
+            header += 'Content-Type: '+str(ContentType)+ '\n' + stringProcessingServer.getDate() + " \n" + "Content-length: " + str(len(response))
 
     except Exception as e:
         print(e)
@@ -58,7 +58,7 @@ def getRequest(connection, requestFile, headers):
     
 # HTTP Head Request
 def headRequest(connection, requestFile, headers):
-    file = customLibrary.formatFile(requestFile)
+    file = stringProcessingServer.formatFile(requestFile)
     try:
         # Get index.html if path ends on /
         if file[-1] == "/" or file == '':
@@ -81,16 +81,16 @@ def headRequest(connection, requestFile, headers):
                 file.close()
 
                 header = 'HTTP/1.1 200 OK\n'
-                ContentType = customLibrary.getContentType(path)
-                header += 'Content-Type: '+str(ContentType)+ '\n' + customLibrary.getDate() + " \n" + "Content-length: " + fileLength
+                ContentType = stringProcessingServer.getContentType(path)
+                header += 'Content-Type: '+str(ContentType)+ '\n' + stringProcessingServer.getDate() + " \n" + "Content-length: " + fileLength
 
         else:
             fileLength = str(len(file.read()))
             file.close()
 
             header = 'HTTP/1.1 200 OK\n'
-            ContentType = customLibrary.getContentType(path)
-            header += 'Content-Type: '+str(ContentType)+ '\n' + customLibrary.getDate() + " \n" + "Content-length: " + fileLength
+            ContentType = stringProcessingServer.getContentType(path)
+            header += 'Content-Type: '+str(ContentType)+ '\n' + stringProcessingServer.getDate() + " \n" + "Content-length: " + fileLength
        
     except Exception as e:
         print(e)
@@ -102,7 +102,7 @@ def headRequest(connection, requestFile, headers):
 # HTTP POST Request
 def postRequest(connection, requestFile, request):
     # Format file and split data from request
-    file = customLibrary.formatFile(requestFile)
+    file = stringProcessingServer.formatFile(requestFile)
     data = request.split("?data='",1)[1].split("'")[0]
     
     # Return Bad request if there isnt a file name at the end of the path
@@ -113,7 +113,7 @@ def postRequest(connection, requestFile, request):
             # Only allow .txt files
             if(file.endswith(".txt")):   
                 # Create paths to the new file and format path
-                customLibrary.createPaths(file)
+                stringProcessingServer.createPaths(file)
                 path = os.path.join("server",file)
                 if os.path.exists(path):
                     file = open(path,'a')
@@ -137,7 +137,7 @@ def postRequest(connection, requestFile, request):
 # HTTP Put Request
 def putRequest(connection, requestFile, request):
     # Format file and split data from request
-    file = customLibrary.formatFile(requestFile)
+    file = stringProcessingServer.formatFile(requestFile)
     data = request.split("?data='",1)[1].split("'")[0]
     
     # Return Bad request if there isnt a file name at the end of the path
@@ -149,7 +149,7 @@ def putRequest(connection, requestFile, request):
             if(file.endswith(".txt")):
 
                 # Create paths to the new file and format path
-                customLibrary.createPaths(file)
+                stringProcessingServer.createPaths(file)
                 path =os.path.join("server",file) 
                 file = open(path,'w') 
                 file.write(data)

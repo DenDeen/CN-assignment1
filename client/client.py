@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import sys
 import select
 import socket
-import stringProcessing
+import stringProcessingClient
 
 # 1. Fetches content length (or not if chunked)
 # 2. Receives and appends the chunks
@@ -17,7 +17,7 @@ def recv_all(sock):
     chunks += chunk
 
     # Get content length
-    contentLength = stringProcessing.getContentLength(chunk)
+    contentLength = stringProcessingClient.getContentLength(chunk)
 
     if (contentLength <= 2048):
         # Timeout of 3 seconds
@@ -51,13 +51,13 @@ def getRequest(host, port):
 
         # Add headers to request and send
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
-        request = 'GET ' + stringProcessing.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
+        request = 'GET ' + stringProcessingClient.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
         s.sendall(request.encode())
         _, html_data = recv_all(s)
 
         # Create directory if it doesn't exist and create new file with fetched data
-        path = stringProcessing.createPaths(host) 
+        path = stringProcessingClient.createPaths(host) 
         with open(path + '\\index.html','wb') as f:
             f.write(html_data)
 
@@ -100,18 +100,18 @@ def getRequest(host, port):
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessing.splitHost(host)[0]
+        hostSplit = stringProcessingClient.splitHost(host)[0]
         s.connect((hostSplit, port))
 
         # Add headers to request and send
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
-        request = 'HEAD ' + stringProcessing.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
+        request = 'HEAD ' + stringProcessingClient.getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
         s.send(request.encode())
         data = recv_all(s)
 
         # Create directory if it doesn't exist and create new file with fetched header
-        path = stringProcessing.createPaths(host) 
+        path = stringProcessingClient.createPaths(host) 
         with open(path + '\\index_head.html','wb') as f:
             f.write(data[0])
         s.close
@@ -121,12 +121,12 @@ def headRequest(host, port):
 def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessing.splitHost(host)[0]
+        hostSplit = stringProcessingClient.splitHost(host)[0]
         s.connect((hostSplit, port))
 
         # Ask string to insert in file and send
         data = input("Give the string you want to place in a new file: ")
-        url = stringProcessing.getUrl(host) + "?data='" +data+ "'"
+        url = stringProcessingClient.getUrl(host) + "?data='" +data+ "'"
         request =  'PUT ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
         response = s.recv(1024)
@@ -137,12 +137,12 @@ def putRequest(host, port):
 def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessing.splitHost(host)[0]
+        hostSplit = stringProcessingClient.splitHost(host)[0]
         s.connect((hostSplit, port))
 
         # Ask string to append to existing file and send
         data = input("Give the string you want to append to a file: ")
-        url = stringProcessing.getUrl(host) + "?data='" +data + "'"
+        url = stringProcessingClient.getUrl(host) + "?data='" +data + "'"
         request =  'POST ' + url + " HTTP/1.1\r\nHost: %s\r\n\r\n" % hostSplit 
         s.send(request.encode())
         response = s.recv(1024)
