@@ -100,7 +100,7 @@ def getRequest(host, port):
 def headRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessingClient.splitHost(host)[0]
+        hostSplit = host.split("/",1)[0]
         s.connect((hostSplit, port))
 
         # Add headers to request and send
@@ -121,7 +121,7 @@ def headRequest(host, port):
 def putRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessingClient.splitHost(host)[0]
+        hostSplit = host.split("/",1)[0]
         s.connect((hostSplit, port))
 
         # Ask string to insert in file and send
@@ -137,7 +137,7 @@ def putRequest(host, port):
 def postRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessingClient.splitHost(host)[0]
+        hostSplit = host.split("/",1)[0]
         s.connect((hostSplit, port))
 
         # Ask string to append to existing file and send
