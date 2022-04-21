@@ -52,8 +52,7 @@ def getRequest(connection, requestFile, headers):
     final_response += b'\r\n\r\n'
     final_response += response 
     connection.send(final_response)
-        
-    
+
 def headRequest(connection, requestFile, headers):
     file = formatFile(requestFile)
     try:
@@ -87,7 +86,6 @@ def headRequest(connection, requestFile, headers):
         header = 'HTTP/1.1 404 Not Found\n\n'
         
     connection.send(header.encode('utf-8'))
-    
 
 def postRequest(connection, requestFile, request):  
     file = formatFile(requestFile)
@@ -117,7 +115,6 @@ def postRequest(connection, requestFile, request):
     
     final_response = header.encode('utf-8')
     connection.send(final_response)
-        
 
 def putRequest(connection, requestFile, request):
     file = formatFile(requestFile)
@@ -145,20 +142,18 @@ def putRequest(connection, requestFile, request):
     
     final_response = header.encode('utf-8')
     connection.send(final_response)
-    
-        
+
 def createPaths(file):
     path = os.path.join(os.getcwd(),os.path.join("server", os.path.split(file)[0]))
     if not os.path.isdir(path):
         print("making dir: " + path)
         os.makedirs (path,mode=0o777, exist_ok=False)
     return path
-        
-        
+
 def getPath(request):
     fullPath = str(request).split("\n",2)[1].split(" ",1)[1]
     return os.path.join(os.getcwd(),os.path.join("server", os.path.split(fullPath)[0]))
-    
+
 def getDate():
     return "Date: " + str(date.today())
 
@@ -196,7 +191,7 @@ def threaded(connection):
     print("closing thread and connection: " + str(connection))
     connection.close()
     exit() 
-    
+
 def main(): 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print ("Socket successfully created")
@@ -213,6 +208,6 @@ def main():
         connection, _ = s.accept()
         start_new_thread(threaded,(connection,))
         print("New connection made")        
-        
+
 if __name__ == "__main__":
    main()
