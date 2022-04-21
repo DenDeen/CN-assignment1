@@ -155,12 +155,16 @@ def main(argv):
     try:
         COMMAND = argv[0] # The command used for the HTTP request
         HOST = argv[1]  # The server's hostname or IP address
-        PORT = int(argv[2])  # The port used by the server
-        print('HTTP Command: ', argv[0])
-        print('SERVER: ', argv[1])
-        print('PORT: ', argv[2])
+        if(len(argv)>2):
+            PORT = int(argv[2])  # The port used by the server
+        else:
+            PORT = 80
+        print('HTTP Command: ', COMMAND)
+        print('SERVER: ', HOST)
+        print('PORT: ', PORT)
 
-    except:
+    except Exception as e:
+        print(e)
         print('Three arguments needed')
         sys.exit(2)
     
