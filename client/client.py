@@ -46,7 +46,7 @@ def recv_all(sock):
 def getRequest(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get host out of URI and connect
-        hostSplit = stringProcessing.splitHost(host)[0]
+        hostSplit = host.split("/",1)[0]
         s.connect((hostSplit, port))
 
         # Add headers to request and send
