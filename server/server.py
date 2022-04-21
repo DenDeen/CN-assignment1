@@ -20,10 +20,28 @@ def getRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        datetime_object = datetime.strptime(headers["If-Modified-Since"], '%a, %d %b %Y %X %Z')
-        if  datetime.timestamp(datetime_object) > os.path.getctime(path):
-            header = 'HTTP/1.1 304 NOT MODIFIED'
-            response = b""
+        
+        if("If-Modified-Since: " in headers): 
+            modifiedSince = headers.split("If-Modified-Since: ",1)[1].split("\r\n",1)[0]
+            datetime_object = datetime.strptime(modifiedSince, '%a, %d %b %Y %X %Z')
+            if  datetime.timestamp(datetime_object) > os.path.getctime(path):
+                header = 'HTTP/1.1 304 NOT MODIFIED'
+                response = b""
+            else:
+                response = file.read()
+                file.close()
+
+                header = 'HTTP/1.1 200 OK\n'
+
+                if(path.endswith(".jpg")):
+                    mimetype = 'image/jpg'
+                elif(path.endswith(".css")):
+                    mimetype = 'text/css'
+                else:
+                    mimetype = 'text/html'
+
+                header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
+
         else:
             response = file.read()
             file.close()
@@ -39,18 +57,20 @@ def getRequest(connection, requestFile, headers):
 
             header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
+        final_response = header.encode('utf-8')
+        final_response += b'\r\n\r\n'
+        final_response += response 
+        connection.send(final_response)
+        connection.close()
+    
     except Exception as e:
         print(e)
         header = 'HTTP/1.1 404 Not Found\n\n ' 
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
 
-    final_response = header.encode('utf-8')
-    final_response += b'\r\n\r\n'
-    final_response += response 
-    connection.send(final_response)
-    connection.close()
     
-
+        
+    
 def headRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
     file = file.lstrip('/')
@@ -61,8 +81,26 @@ def headRequest(connection, requestFile, headers):
     try:
         path =os.path.join("server",file) 
         file = open(path,'rb') 
-        if 1 == 2:
-            header = 'HTTP/1.1 304 NOT MODIFIED'
+        if("If-Modified-Since: " in headers): 
+            modifiedSince = headers.split("If-Modified-Since: ",1)[1].split("\r\n",1)[0]
+            datetime_object = datetime.strptime(modifiedSince, '%a, %d %b %Y %X %Z')
+            if  datetime.timestamp(datetime_object) > os.path.getctime(path):
+                header = 'HTTP/1.1 304 NOT MODIFIED'
+            else:
+                fileLength = str(len(file.read()))
+                file.close()
+
+                header = 'HTTP/1.1 200 OK\n'
+
+                if(path.endswith(".jpg")):
+                    mimetype = 'image/jpg'
+                elif(path.endswith(".css")):
+                    mimetype = 'text/css'
+                else:
+                    mimetype = 'text/html'
+
+                header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
+
         else:
             fileLength = str(len(file.read()))
             file.close()
@@ -77,13 +115,15 @@ def headRequest(connection, requestFile, headers):
                 mimetype = 'text/html'
 
             header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
-
+            
+        connection.send(header.encode('utf-8'))
+        connection.close()
+       
     except Exception as e:
         print(e)
         header = 'HTTP/1.1 404 Not Found\n\n'
         
-    connection.send(header.encode('utf-8'))
-    connection.close()
+    
     
 
 def postRequest(connection, requestFile, request):  
@@ -111,7 +151,7 @@ def postRequest(connection, requestFile, request):
                 
         except Exception as e:
             print(e)
-            header = 'HTTP/1.1 404 Not Found\n\n'
+            header = 'HTTP/1.1 500 Server error\n\n'
     
     final_response = header.encode('utf-8')
     connection.send(final_response)
@@ -140,7 +180,7 @@ def putRequest(connection, requestFile, request):
                 
         except Exception as e:
             print(e)
-            header = 'HTTP/1.1 500 Servor error\n\n'
+            header = 'HTTP/1.1 500 Server error\n\n'
     
     final_response = header.encode('utf-8')
     connection.send(final_response)
@@ -166,7 +206,7 @@ def getDate():
 s = socket.socket()
 print ("Socket successfully created")
 
-port = 81
+port = 80
 
 s.bind(('', port))
 print ("socket binded to %s" %(port))
@@ -182,18 +222,18 @@ while True:
     requestType = datasplit[0]
     requestFile = datasplit[1]
     header = datasplit[2]
-    headers = json.loads(datasplit[2].split("\r\n\r\n",1)[1])
-    
+   
     if "Host: " in header:
         
         if requestType == 'GET':
-            getRequest(connection, requestFile, headers)
+            getRequest(connection, requestFile, header)
         elif requestType == 'HEAD':
-            headRequest(connection, requestFile, headers)
+            headRequest(connection, requestFile, header)
         elif requestType == 'PUT':
             putRequest(connection, requestFile, request)
         elif requestType == 'POST':
             postRequest(connection, requestFile, request)
     else:
         connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
+        connection.close()
 
