@@ -184,7 +184,6 @@ def threaded(connection):
     while listen:
         request = connection.recv(1024).decode()
         if(request == ""):
-            connection.close()
             listen = False
         else:
             datasplit = str(request).split(" ",2)
@@ -193,7 +192,6 @@ def threaded(connection):
             header = datasplit[2]
         
             if "Host: " in header:
-                
                 if requestType == 'GET':
                     getRequest(connection, requestFile, header)
                 elif requestType == 'HEAD':
@@ -203,13 +201,16 @@ def threaded(connection):
                 elif requestType == 'POST':
                     postRequest(connection, requestFile, request)
             else:
-                connection.send('HTTP/1.1 400 Bad request\n\n'.encode())    
+                connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
+    print("closing thread and connection: " + str(connection))
+    connection.close()
+    exit() 
     
 def main(): 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print ("Socket successfully created")
 
-    port = 81
+    port = 80
 
     s.bind(('', port))
     print ("socket binded to %s" %(port))
@@ -219,11 +220,8 @@ def main():
 
     while True:
         connection, _ = s.accept()
-        print("New connection made")
-        print_lock.acquire()
         start_new_thread(threaded,(connection,))
-    s.close()
-        
+        print("New connection made")        
         
 if __name__ == "__main__":
    main()
