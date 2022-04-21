@@ -97,7 +97,7 @@ def getRequest(host, port):
                     if img_uri[0] != '/':
                         img['src'] = img['src'].replace(img_uri, '/'+img_uri)
                         img_uri = '/'+img_uri
-                    s.sendall(('GET ' + img_uri + ' HTTP/1.1\r\nHost: %s\r\n\r\n' % host.split("/",1)[0]).encode())
+                    s.send(('GET ' + img_uri + ' HTTP/1.1\r\nHost: %s\r\n\r\n' % host.split("/",1)[0]).encode())
                     _, image_data =  recv_all(s)
                     
                     # save image
@@ -121,7 +121,7 @@ def headRequest(host, port):
         modifiedSinceHeader = "\r\nIf-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT"
         request = 'HEAD ' + getUrl(host) +" HTTP/1.1\r\nHost: %s" % hostSplit 
         request += modifiedSinceHeader + "\r\n\r\n"
-        s.sendall(request.encode())
+        s.send(request.encode())
         data = recv_all(s)
         path = createPaths(host) 
 

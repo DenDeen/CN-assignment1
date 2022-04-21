@@ -18,6 +18,7 @@ print_lock = threading.Lock()
 
 def getRequest(connection, requestFile, headers):   
     file = requestFile.split('?')[0]
+    file = file.lstrip('/')
     if(file == '/' ) or (file == ''):
         file = 'index.html'
     try:
@@ -63,7 +64,7 @@ def getRequest(connection, requestFile, headers):
     
 def headRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
-    
+    file = file.lstrip('/')
     if(file == '/' ) or (file == ''):
         file = 'index.html'
     
@@ -102,6 +103,7 @@ def headRequest(connection, requestFile, headers):
 
 def postRequest(connection, requestFile, request):  
     file = requestFile.split('?')[0]
+    file = file.lstrip('/')
     data = request.split("?data='",1)[1].split("'")[0]
     
     if(file == '/' ) or (file == ''):
@@ -132,6 +134,7 @@ def postRequest(connection, requestFile, request):
 
 def putRequest(connection, requestFile, request):
     file = requestFile.split('?')[0]
+    file = file.lstrip('/')
     data = request.split("?data='",1)[1].split("'")[0]
     
     if(file == '/' ) or (file == ''):
@@ -182,28 +185,30 @@ def getContentType(path):
         return 'text/html'
 
 def threaded(connection):
-    while True:
+    listen = True
+    while listen:
         request = connection.recv(1024).decode()
-        datasplit = str(request).split(" ",2)
-        requestType = datasplit[0]
-        requestFile = datasplit[1]
-        print(datasplit)
-        header = datasplit[2]
-    
-        if "Host: " in header:
-            
-            if requestType == 'GET':
-                getRequest(connection, requestFile, header)
-            elif requestType == 'HEAD':
-                headRequest(connection, requestFile, header)
-            elif requestType == 'PUT':
-                putRequest(connection, requestFile, request)
-            elif requestType == 'POST':
-                postRequest(connection, requestFile, request)
+        if(request == ""):
+            connection.close()
+            listen = False
         else:
-            connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
-    
-     
+            datasplit = str(request).split(" ",2)
+            requestType = datasplit[0]
+            requestFile = datasplit[1]
+            header = datasplit[2]
+        
+            if "Host: " in header:
+                
+                if requestType == 'GET':
+                    getRequest(connection, requestFile, header)
+                elif requestType == 'HEAD':
+                    headRequest(connection, requestFile, header)
+                elif requestType == 'PUT':
+                    putRequest(connection, requestFile, request)
+                elif requestType == 'POST':
+                    postRequest(connection, requestFile, request)
+            else:
+                connection.send('HTTP/1.1 400 Bad request\n\n'.encode())    
     
 def main(): 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -222,6 +227,7 @@ def main():
         print("New connection made")
         print_lock.acquire()
         start_new_thread(threaded,(connection,))
+    s.close()
         
         
 if __name__ == "__main__":
