@@ -1,4 +1,5 @@
 from base64 import encode
+from email.headerregistry import ContentTypeHeader
 from fileinput import filename
 from runpy import _ModifiedArgv0
 import socket
@@ -31,30 +32,16 @@ def getRequest(connection, requestFile, headers):
                 file.close()
 
                 header = 'HTTP/1.1 200 OK\n'
-
-                if(path.endswith(".jpg")):
-                    mimetype = 'image/jpg'
-                elif(path.endswith(".css")):
-                    mimetype = 'text/css'
-                else:
-                    mimetype = 'text/html'
-
-                header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
+                ContentType = getContentType(path)
+                header += 'Content-Type: '+str(ContentType)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
         else:
             response = file.read()
             file.close()
 
             header = 'HTTP/1.1 200 OK\n'
-
-            if(path.endswith(".jpg")):
-                mimetype = 'image/jpg'
-            elif(path.endswith(".css")):
-                mimetype = 'text/css'
-            else:
-                mimetype = 'text/html'
-
-            header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
+            ContentType = getContentType(path)
+            header += 'Content-Type: '+str(ContentType)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
        
     
@@ -91,30 +78,16 @@ def headRequest(connection, requestFile, headers):
                 file.close()
 
                 header = 'HTTP/1.1 200 OK\n'
-
-                if(path.endswith(".jpg")):
-                    mimetype = 'image/jpg'
-                elif(path.endswith(".css")):
-                    mimetype = 'text/css'
-                else:
-                    mimetype = 'text/html'
-
-                header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
+                ContentType = getContentType(path)
+                header += 'Content-Type: '+str(ContentType)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
 
         else:
             fileLength = str(len(file.read()))
             file.close()
 
             header = 'HTTP/1.1 200 OK\n'
-
-            if(path.endswith(".jpg")):
-                mimetype = 'image/jpg'
-            elif(path.endswith(".css")):
-                mimetype = 'text/css'
-            else:
-                mimetype = 'text/html'
-
-            header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
+            ContentType = getContentType(path)
+            header += 'Content-Type: '+str(ContentType)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
        
     except Exception as e:
         print(e)
@@ -199,7 +172,14 @@ def getPath(request):
 def getDate():
     return "Date: " + str(date.today())
 
-
+def getContentType(path):
+    if(path.endswith(".jpg")):
+        return 'image/jpg'
+    elif(path.endswith(".css")):
+        return 'text/css'
+    else:
+        return 'text/html'
+    
 s = socket.socket()
 print ("Socket successfully created")
 
