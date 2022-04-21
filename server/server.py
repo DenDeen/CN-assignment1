@@ -10,14 +10,13 @@ import os
 from venv import create
 import json
 
-def getRequest(connection, requestFile, headers):
+def getRequest(connection, requestFile, headers):   
     file = requestFile.split('?')[0]
-    file = file.lstrip('/')
-
-    if(file == '/'):
-        file = 'server/index.html'
-    
+    if(file == '/' ) or (file == ''):
+        file = 'index.html'
     try:
+        if(file[-1] == "/"):
+            file += "index.html"
         path =os.path.join("server",file) 
         file = open(path,'rb') 
         
@@ -57,28 +56,29 @@ def getRequest(connection, requestFile, headers):
 
             header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + str(len(response))
 
-        final_response = header.encode('utf-8')
-        final_response += b'\r\n\r\n'
-        final_response += response 
-        connection.send(final_response)
-        connection.close()
+       
     
     except Exception as e:
         print(e)
         header = 'HTTP/1.1 404 Not Found\n\n ' 
         response = '<html><body><center><h3>Error 404: File not found</h3></center></body></html>'.encode('utf-8')
 
-    
+    final_response = header.encode('utf-8')
+    final_response += b'\r\n\r\n'
+    final_response += response 
+    connection.send(final_response)
+    connection.close()
         
     
 def headRequest(connection, requestFile, headers):
     file = requestFile.split('?')[0]
-    file = file.lstrip('/')
-
-    if(file == '/'):
-        file = 'server/index.html'
+    
+    if(file == '/' ) or (file == ''):
+        file = 'index.html'
     
     try:
+        if(file[-1] == "/"):
+            file += "index.html"
         path =os.path.join("server",file) 
         file = open(path,'rb') 
         if("If-Modified-Since: " in headers): 
@@ -115,23 +115,20 @@ def headRequest(connection, requestFile, headers):
                 mimetype = 'text/html'
 
             header += 'Content-Type: '+str(mimetype)+ '\n' + getDate() + " \n" + "Content-length: " + fileLength
-            
-        connection.send(header.encode('utf-8'))
-        connection.close()
        
     except Exception as e:
         print(e)
         header = 'HTTP/1.1 404 Not Found\n\n'
         
-    
+    connection.send(header.encode('utf-8'))
+    connection.close()
     
 
 def postRequest(connection, requestFile, request):  
     file = requestFile.split('?')[0]
-    file = file.lstrip('/')
     data = request.split("?data='",1)[1].split("'")[0]
     
-    if(file == '/'):
+    if(file == '/' ) or (file == ''):
         header = 'HTTP/1.1 400 Bad request\n\n'
     else:
         try:
@@ -160,10 +157,10 @@ def postRequest(connection, requestFile, request):
 
 def putRequest(connection, requestFile, request):
     file = requestFile.split('?')[0]
-    file = file.lstrip('/')
     data = request.split("?data='",1)[1].split("'")[0]
     
-    if(file == '/'):
+    if(file == '/' ) or (file == ''):
+        print("hallo")
         header = 'HTTP/1.1 400 Bad request\n\n'
     else:
         try:
