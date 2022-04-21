@@ -10,6 +10,11 @@ from pathlib import Path
 import os
 from venv import create
 import json
+import socket
+from _thread import *
+import threading
+
+print_lock = threading.Lock()
 
 def getRequest(connection, requestFile, headers):   
     file = requestFile.split('?')[0]
@@ -54,7 +59,6 @@ def getRequest(connection, requestFile, headers):
     final_response += b'\r\n\r\n'
     final_response += response 
     connection.send(final_response)
-    connection.close()
         
     
 def headRequest(connection, requestFile, headers):
@@ -94,7 +98,6 @@ def headRequest(connection, requestFile, headers):
         header = 'HTTP/1.1 404 Not Found\n\n'
         
     connection.send(header.encode('utf-8'))
-    connection.close()
     
 
 def postRequest(connection, requestFile, request):  
@@ -125,7 +128,6 @@ def postRequest(connection, requestFile, request):
     
     final_response = header.encode('utf-8')
     connection.send(final_response)
-    connection.close()
         
 
 def putRequest(connection, requestFile, request):
@@ -154,7 +156,6 @@ def putRequest(connection, requestFile, request):
     
     final_response = header.encode('utf-8')
     connection.send(final_response)
-    connection.close()
     
         
 def createPaths(file):
@@ -179,25 +180,14 @@ def getContentType(path):
         return 'text/css'
     else:
         return 'text/html'
-def main(): 
-    s = socket.socket()
-    print ("Socket successfully created")
 
-    port = 80
-
-    s.bind(('', port))
-    print ("socket binded to %s" %(port))
-
-    s.listen(5)
-    print ("socket is listening")
-
+def threaded(connection):
     while True:
-        connection, addr = s.accept()
-        print(connection)
         request = connection.recv(1024).decode()
         datasplit = str(request).split(" ",2)
         requestType = datasplit[0]
         requestFile = datasplit[1]
+        print(datasplit)
         header = datasplit[2]
     
         if "Host: " in header:
@@ -212,7 +202,27 @@ def main():
                 postRequest(connection, requestFile, request)
         else:
             connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
-            connection.close()
+    
+     
+    
+def main(): 
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print ("Socket successfully created")
 
+    port = 80
+
+    s.bind(('', port))
+    print ("socket binded to %s" %(port))
+
+    s.listen(5)
+    print ("socket is listening")
+
+    while True:
+        connection, _ = s.accept()
+        print("New connection made")
+        print_lock.acquire()
+        start_new_thread(threaded,(connection,))
+        
+        
 if __name__ == "__main__":
    main()
