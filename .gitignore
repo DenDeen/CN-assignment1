@@ -7,8 +7,6 @@ site.html
 
 *.ipynb
 
-*.html
-
 .vscode/launch.json
 
 *.png
