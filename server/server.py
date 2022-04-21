@@ -179,38 +179,40 @@ def getContentType(path):
         return 'text/css'
     else:
         return 'text/html'
+def main(): 
+    s = socket.socket()
+    print ("Socket successfully created")
+
+    port = 80
+
+    s.bind(('', port))
+    print ("socket binded to %s" %(port))
+
+    s.listen(5)
+    print ("socket is listening")
+
+    while True:
+        connection, addr = s.accept()
+        print(connection)
+        request = connection.recv(1024).decode()
+        datasplit = str(request).split(" ",2)
+        requestType = datasplit[0]
+        requestFile = datasplit[1]
+        header = datasplit[2]
     
-s = socket.socket()
-print ("Socket successfully created")
+        if "Host: " in header:
+            
+            if requestType == 'GET':
+                getRequest(connection, requestFile, header)
+            elif requestType == 'HEAD':
+                headRequest(connection, requestFile, header)
+            elif requestType == 'PUT':
+                putRequest(connection, requestFile, request)
+            elif requestType == 'POST':
+                postRequest(connection, requestFile, request)
+        else:
+            connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
+            connection.close()
 
-port = 80
-
-s.bind(('', port))
-print ("socket binded to %s" %(port))
-
-s.listen(5)
-print ("socket is listening")
-
-while True:
-    connection, addr = s.accept()
-
-    request = connection.recv(1024).decode()
-    datasplit = str(request).split(" ",2)
-    requestType = datasplit[0]
-    requestFile = datasplit[1]
-    header = datasplit[2]
-   
-    if "Host: " in header:
-        
-        if requestType == 'GET':
-            getRequest(connection, requestFile, header)
-        elif requestType == 'HEAD':
-            headRequest(connection, requestFile, header)
-        elif requestType == 'PUT':
-            putRequest(connection, requestFile, request)
-        elif requestType == 'POST':
-            postRequest(connection, requestFile, request)
-    else:
-        connection.send('HTTP/1.1 400 Bad request\n\n'.encode())
-        connection.close()
-
+if __name__ == "__main__":
+   main()
